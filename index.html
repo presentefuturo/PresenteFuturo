@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presente Futuro</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Presente Futuro</h1>
+        <p>Crie e compartilhe sua lista de presentes!</p>
+    </header>
+    <main>
+        <section id="cadastro">
+            <h2>Cadastre-se</h2>
+            <form id="cadastroForm">
+                <label for="instagram">Instagram:</label>
+                <input type="text" id="instagram" name="instagram" required>
+                <label for="lista">Lista de Presentes:</label>
+                <textarea id="lista" name="lista" required></textarea>
+                <button type="submit">Cadastrar</button>
+            </form>
+        </section>
+        <section id="listas">
+            <h2>Listas de Presentes</h2>
+            <div id="listasContainer"></div>
+        </section>
+    </main>
+    <script src="js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+    "name": "presente-futuro",
+    "version": "1.0.0",
+    "description": "Site do Presente Futuro",
+    "main": "index.js",
+    "scripts": {
+      "start": "lite-server"
+    },
+    "author": "Thiago",
+    "license": "ISC",
+    "devDependencies": {
+      "lite-server": "^2.6.1"
+    }
+  }
+  
