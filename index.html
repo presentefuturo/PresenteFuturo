@@ -1,32 +1,124 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presente Futuro</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Cadastro de Presentes</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 10px;
+            color: #555;
+        }
+        input, textarea { 
+            width: calc(100% - 20px); 
+            margin: 8px 0; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 16px; 
+            outline: none; 
+        }
+        button { 
+            width: 100%; 
+            padding: 12px 20px; 
+            background-color: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            transition: background-color 0.3s; 
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Presente Futuro</h1>
-        <p>Crie e compartilhe sua lista de presentes!</p>
-    </header>
-    <main>
-        <section id="cadastro">
-            <h2>Cadastre-se</h2>
-            <form id="cadastroForm">
-                <label for="instagram">Instagram:</label>
-                <input type="text" id="instagram" name="instagram" required>
-                <label for="lista">Lista de Presentes:</label>
-                <textarea id="lista" name="lista" required></textarea>
-                <button type="submit">Cadastrar</button>
-            </form>
-        </section>
-        <section id="listas">
-            <h2>Listas de Presentes</h2>
-            <div id="listasContainer"></div>
-        </section>
-    </main>
-    <script src="js/script.js"></script>
+    <div class="container">
+        <img src="LOGO-PROVISÓRIA-PRESENTE-FUTURO.png" alt="Logo Presente Futuro" style="max-width: 100%; margin-bottom: 20px;">
+        <h1>Cadastro de Presentes</h1>
+        <form id="giftForm">
+            <label for="name">Nome:</label>
+            <input type="text" id="name" name="name" required>
+            
+            <label for="instagram">Instagram:</label>
+            <input type="text" id="instagram" name="instagram" required>
+            
+            <div id="giftFields">
+                <label for="gift1">Sugestão de Presente 1:</label>
+                <input type="text" id="gift1" name="gifts[]" class="gift-input" required>
+            </div>
+            
+            <button type="button" id="addGiftButton">Outra sugestão</button>
+            
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('addGiftButton').addEventListener('click', function() {
+            const giftFields = document.getElementById('giftFields');
+            const numGifts = giftFields.querySelectorAll('.gift-input').length + 1;
+            
+            const label = document.createElement('label');
+            label.setAttribute('for', `gift${numGifts}`);
+            label.textContent = `Sugestão de Presente ${numGifts}:`;
+            
+            const input = document.createElement('input');
+            input.setAttribute('type', 'text');
+            input.setAttribute('id', `gift${numGifts}`);
+            input.setAttribute('name', 'gifts[]');
+            input.classList.add('gift-input');
+            input.setAttribute('required', '');
+            
+            giftFields.appendChild(label);
+            giftFields.appendChild(input);
+        });
+        
+        document.getElementById('giftForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const instagram = document.getElementById('instagram').value;
+            const gifts = document.querySelectorAll('.gift-input');
+            const giftsArray = Array.from(gifts).map(gift => gift.value);
+            
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, instagram, gifts: giftsArray })
+            });
+            
+            if (response.ok) {
+                alert('Cadastro realizado com sucesso!');
+            } else {
+                alert('Erro no cadastro.');
+            }
+        });
+    </script>
 </body>
 </html>
