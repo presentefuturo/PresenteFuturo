@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,11 +27,14 @@
             display: flex;
             flex-direction: column;
         }
+        section {
+            margin-top: 20px;
+        }
         label {
             margin-top: 10px;
             color: #555;
         }
-        input, textarea { 
+        input, textarea, select { 
             width: calc(100% - 20px); 
             margin: 8px 0; 
             padding: 10px; 
@@ -40,10 +43,13 @@
             font-size: 16px; 
             outline: none; 
         }
+        .gift-input {
+            margin-bottom: 8px;
+        }
         button { 
             width: 100%; 
             padding: 12px 20px; 
-            background-color: #4CAF50; 
+            background-color: #0097a7ff; /* Cor modificada */
             color: white; 
             border: none; 
             border-radius: 4px; 
@@ -52,8 +58,38 @@
             transition: background-color 0.3s; 
             margin-top: 10px;
         }
+        button.secondary {
+            background-color: #ddd;
+            color: #333;
+            margin-top: 5px;
+        }
         button:hover {
-            background-color: #45a049;
+            background-color: #007f8dff; /* Cor modificada no hover */
+        }
+        button[type="submit"] {
+            background-color: #0097a7ff; /* Cor modificada */
+            font-weight: bold;
+            font-size: 18px;
+        }
+        button[type="submit"]:hover {
+            background-color: #007f8dff; /* Cor modificada no hover */
+        }
+        .error-message {
+            color: red;
+            font-style: italic;
+            margin-top: 5px;
+            display: none;
+        }
+        .instagram-profile {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .instagram-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -65,21 +101,43 @@
             <label for="name">Nome:</label>
             <input type="text" id="name" name="name" required>
             
+            <label for="phone">Telefone:</label>
+            <input type="text" id="phone" name="phone" pattern="\(\d{2}\)\d{9}" placeholder="(XX)XXXXXXXXX" required>
+            
+            <label for="birthday">Data de Aniversário:</label>
+            <input type="date" id="birthday" name="birthday" required>
+            
             <label for="instagram">Instagram:</label>
             <input type="text" id="instagram" name="instagram" required>
+            <div id="instagramProfile" class="instagram-profile"></div>
             
-            <div id="giftFields">
-                <label for="gift1">Sugestão de Presente 1:</label>
-                <input type="text" id="gift1" name="gifts[]" class="gift-input" required>
-            </div>
+            <section>
+                <h2>Monte aqui a sua Lista de Presentes</h2>
+                <div id="giftFields">
+                    <label for="gift1">Sugestão de Presente 1:</label>
+                    <input type="text" id="gift1" name="gifts[]" class="gift-input" required>
+                </div>
+                <p class="error-message" id="errorMessage"></p>
+                <button type="button" id="addGiftButton" class="secondary">+ Outra sugestão</button>
+            </section>
             
-            <button type="button" id="addGiftButton">Outra sugestão</button>
-            
-            <button type="submit">Enviar</button>
+            <button type="submit">Enviar minha lista de PresenteFuturo</button>
         </form>
     </div>
     <script>
         document.getElementById('addGiftButton').addEventListener('click', function() {
+            const lastGiftInput = document.querySelector('.gift-input:last-of-type');
+            if (!lastGiftInput.value.trim()) {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = "(Antes de criar uma nova sugestão, preencha a sugestão anterior!)";
+                errorMessage.style.display = 'block';
+                setTimeout(() => {
+                    errorMessage.textContent = '';
+                    errorMessage.style.display = 'none';
+                }, 5000); // 5 segundos
+                return;
+            }
+            
             const giftFields = document.getElementById('giftFields');
             const numGifts = giftFields.querySelectorAll('.gift-input').length + 1;
             
@@ -96,12 +154,17 @@
             
             giftFields.appendChild(label);
             giftFields.appendChild(input);
+            
+            // Foca automaticamente no novo campo criado
+            input.focus();
         });
         
         document.getElementById('giftForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
             const instagram = document.getElementById('instagram').value;
+            const birthday = formatDate(document.getElementById('birthday').value);
             const gifts = document.querySelectorAll('.gift-input');
             const giftsArray = Array.from(gifts).map(gift => gift.value);
             
@@ -110,7 +173,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, instagram, gifts: giftsArray })
+                body: JSON.stringify({ name, phone, instagram, birthday, gifts: giftsArray })
             });
             
             if (response.ok) {
@@ -119,6 +182,49 @@
                 alert('Erro no cadastro.');
             }
         });
+
+        document.getElementById('instagram').addEventListener('input', function() {
+            const username = this.value.trim();
+            if (username) {
+                fetchInstagramProfile(username);
+            } else {
+                clearInstagramProfile();
+            }
+        });
+
+        async function fetchInstagramProfile(username) {
+            try {
+                const response = await fetch(`https://www.instagram.com/${username}/?__a=1`);
+                const data = await response.json();
+                if (data && data.graphql && data.graphql.user && data.graphql.user.profile_pic_url_hd) {
+                    const profilePicUrl = data.graphql.user.profile_pic_url_hd;
+                    displayInstagramProfile(profilePicUrl);
+                } else {
+                    clearInstagramProfile();
+                }
+            } catch (error) {
+                console.error('Erro ao buscar perfil do Instagram:', error);
+                clearInstagramProfile();
+            }
+        }
+
+        function displayInstagramProfile(profilePicUrl) {
+            const instagramProfileDiv = document.getElementById('instagramProfile');
+            instagramProfileDiv.innerHTML = `
+                <img src="${profilePicUrl}" alt="Foto de perfil do Instagram" title="Perfil do Instagram">
+            `;
+        }
+
+        function clearInstagramProfile() {
+            const instagramProfileDiv = document.getElementById('instagramProfile');
+            instagramProfileDiv.innerHTML = '';
+        }
+
+        function formatDate(dateString) {
+            const options = { day: '2-digit', month: 'long', year: 'numeric' };
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR', options);
+        }
     </script>
 </body>
 </html>
