@@ -82,6 +82,7 @@
         }
         .instagram-profile {
             display: flex;
+            flex-direction: column;
             align-items: center;
             margin-top: 10px;
         }
@@ -89,7 +90,35 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .instagram-link {
+            font-size: 12px;
+            font-style: italic;
+            margin-top: 5px;
+            display: none; /* Inicia oculto até ter conteúdo */
+            text-align: center; /* Centraliza o texto da URL */
+        }
+        .instagram-link.show {
+            display: block;
+            color: #0097a7ff; /* Cor vermelha padrão */
+        }
+        .instagram-link.show.blue {
+            color: #0097a7ff; /* Cor azul quando marcado */
+        }
+        .instagram-link.show:hover {
+            text-decoration: underline;
+        }
+        /* Estilos para o checkbox e texto dinâmico */
+        #isThisPerson + span {
+            font-size: 12px;
+            display: block;
+            text-align: center;
+            margin-top: 5px;
+            color: red; /* Cor vermelha padrão quando não marcado */
+        }
+        #isThisPerson:checked + span {
+            color: #0097a7ff; /* Cor azul quando marcado */
         }
     </style>
 </head>
@@ -102,14 +131,23 @@
             <input type="text" id="name" name="name" required>
             
             <label for="phone">Telefone:</label>
-            <input type="text" id="phone" name="phone" pattern="\(\d{2}\)\d{9}" placeholder="(XX)XXXXXXXXX" required>
+            <input type="text" id="phone" name="phone" placeholder="(XX) XXXXX-XXXX" required>
             
             <label for="birthday">Data de Aniversário:</label>
             <input type="date" id="birthday" name="birthday" required>
             
-            <label for="instagram">Instagram:</label>
+            <label for="instagram">Perfil do instagram:</label>
             <input type="text" id="instagram" name="instagram" required>
-            <div id="instagramProfile" class="instagram-profile"></div>
+            
+            <div class="instagram-profile">
+                <div id="instagramProfile"></div>
+                <span id="instagramUrl" class="instagram-link"></span>
+            </div>
+            
+            <label>
+                <input type="checkbox" id="isThisPerson">
+                <span id="isThisPersonText">Clique aqui se for esse o perfil 🤔</span>
+            </label>
             
             <section>
                 <h2>Monte aqui a sua Lista de Presentes</h2>
@@ -162,7 +200,7 @@
         document.getElementById('giftForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
+            const phone = document.getElementById('phone').value.replace(/\D/g, '');
             const instagram = document.getElementById('instagram').value;
             const birthday = formatDate(document.getElementById('birthday').value);
             const gifts = document.querySelectorAll('.gift-input');
@@ -177,54 +215,69 @@
             });
             
             if (response.ok) {
-                alert('Cadastro realizado com sucesso!');
+                const responseData = await response.json();
+                const params = new URLSearchParams();
+                params.append('name', name);
+                params.append('phone', phone);
+                params.append('instagram', instagram);
+                params.append('birthday', birthday);
+                giftsArray.forEach(gift => params.append('gifts[]', gift));
+                
+                // Redireciona para a página de resumo com os parâmetros de URL
+                window.location.href = 'resumo.html?' + params.toString();
             } else {
-                alert('Erro no cadastro.');
+                const errorField = await response.json();
+                alert(`Erro no cadastro: ${errorField.message}`);
             }
         });
 
         document.getElementById('instagram').addEventListener('input', function() {
-            const username = this.value.trim();
+            const username = this.value.replace(/[^a-zA-Z0-9_.]/g, '').trim(); // Remove caracteres especiais
+            this.value = username; // Atualiza o campo com o valor limpo
+            
+            const instagramUrl = document.getElementById('instagramUrl');
+            const isThisPersonCheckbox = document.getElementById('isThisPerson');
+            const isThisPersonText = document.getElementById('isThisPersonText');
+            
             if (username) {
-                fetchInstagramProfile(username);
+                const profileUrl = `https://www.instagram.com/${username}/`;
+                instagramUrl.innerHTML = `<a href="${profileUrl}" class="instagram-link show" target="_blank">${profileUrl}</a>`;
+                instagramUrl.style.display = 'block';
+                isThisPersonCheckbox.disabled = false;
+                isThisPersonText.textContent = "Clique aqui se for esse o perfil 🤔";
+                isThisPersonText.style.color = 'red';
             } else {
-                clearInstagramProfile();
+                instagramUrl.style.display = 'none';
+                isThisPersonCheckbox.disabled = true;
+                isThisPersonText.textContent = "Clique aqui se for esse o perfil 🤔";
+                isThisPersonText.style.color = 'red';
             }
         });
 
-        async function fetchInstagramProfile(username) {
-            try {
-                const response = await fetch(`https://www.instagram.com/${username}/?__a=1`);
-                const data = await response.json();
-                if (data && data.graphql && data.graphql.user && data.graphql.user.profile_pic_url_hd) {
-                    const profilePicUrl = data.graphql.user.profile_pic_url_hd;
-                    displayInstagramProfile(profilePicUrl);
-                } else {
-                    clearInstagramProfile();
-                }
-            } catch (error) {
-                console.error('Erro ao buscar perfil do Instagram:', error);
-                clearInstagramProfile();
+        document.getElementById('isThisPerson').addEventListener('change', function() {
+            const isThisPersonText = document.getElementById('isThisPersonText');
+            if (this.checked) {
+                isThisPersonText.textContent = "Confirmado! É esse mesmo! 👍🏽";
+                isThisPersonText.style.color = '#0097a7ff'; // Azul
+            } else {
+                isThisPersonText.textContent = "Clique aqui se for esse o perfil 🤔";
+                isThisPersonText.style.color = 'red'; // Vermelho
             }
-        }
-
-        function displayInstagramProfile(profilePicUrl) {
-            const instagramProfileDiv = document.getElementById('instagramProfile');
-            instagramProfileDiv.innerHTML = `
-                <img src="${profilePicUrl}" alt="Foto de perfil do Instagram" title="Perfil do Instagram">
-            `;
-        }
-
-        function clearInstagramProfile() {
-            const instagramProfileDiv = document.getElementById('instagramProfile');
-            instagramProfileDiv.innerHTML = '';
-        }
+        });
 
         function formatDate(dateString) {
             const options = { day: '2-digit', month: 'long', year: 'numeric' };
             const date = new Date(dateString);
             return date.toLocaleDateString('pt-BR', options);
         }
+
+        // Função para formatar o telefone no formato (XX) XXXXX-XXXX
+        document.getElementById('phone').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            e.target.value = value;
+        });
     </script>
 </body>
 </html>

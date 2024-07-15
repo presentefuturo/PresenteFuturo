@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumo do Cadastro de Presentes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        section {
+            margin-top: 20px;
+        }
+        label {
+            margin-top: 10px;
+            color: #555;
+        }
+        .info-item {
+            margin-bottom: 10px;
+        }
+        .buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 12px 20px;
+            background-color: #0097a7ff; /* Cor modificada */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #007f8dff; /* Cor modificada no hover */
+        }
+        button.secondary {
+            background-color: #ddd;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Resumo do Cadastro</h1>
+        <section class="info-item">
+            <label>Nome:</label>
+            <span id="summaryName"></span>
+        </section>
+        <section class="info-item">
+            <label>Telefone:</label>
+            <span id="summaryPhone"></span>
+        </section>
+        <section class="info-item">
+            <label>Data de Aniversário:</label>
+            <span id="summaryBirthday"></span>
+        </section>
+        <section class="info-item">
+            <label>Perfil do Instagram:</label>
+            <span id="summaryInstagram"></span>
+        </section>
+        <section class="info-item">
+            <label>Sugestões de Presente:</label>
+            <ul id="summaryGifts"></ul>
+        </section>
+        <div class="buttons">
+            <button id="confirmButton">Confirmar informações</button>
+            <button id="editButton" class="secondary">Editar informações</button>
+        </div>
+    </div>
+    <script>
+        // Função para preencher o resumo com os dados do formulário
+        function fillSummary() {
+            const params = new URLSearchParams(window.location.search);
+            document.getElementById('summaryName').textContent = params.get('name');
+            document.getElementById('summaryPhone').textContent = params.get('phone');
+            document.getElementById('summaryBirthday').textContent = params.get('birthday');
+            document.getElementById('summaryInstagram').textContent = params.get('instagram');
+
+            const gifts = params.getAll('gifts[]');
+            const summaryGifts = document.getElementById('summaryGifts');
+            gifts.forEach(gift => {
+                const li = document.createElement('li');
+                li.textContent = gift;
+                summaryGifts.appendChild(li);
+            });
+        }
+
+        fillSummary();
+
+        // Event listeners para os botões
+        document.getElementById('confirmButton').addEventListener('click', function() {
+            alert('Informações confirmadas! Implemente aqui a lógica para enviar os dados ao sistema.');
+            // Implemente aqui o código para enviar os dados ao sistema
+        });
+
+        document.getElementById('editButton').addEventListener('click', function() {
+            window.location.href = 'cadastro.html'; // Redireciona de volta para a página de cadastro
+        });
+    </script>
+</body>
+</html>
