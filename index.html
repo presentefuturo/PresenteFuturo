@@ -135,6 +135,10 @@
             display: flex;
             justify-content: space-between;
         }
+        .button-group button {
+            flex: 1;
+            margin: 0 5px;
+        }
     </style>
 </head>
 <body>
@@ -192,6 +196,10 @@
     </div>
     <script>
         document.getElementById('addGiftButton').addEventListener('click', function() {
+            addGiftInput();
+        });
+
+        function addGiftInput() {
             const lastGiftInput = document.querySelector('.gift-input:last-of-type');
             if (!lastGiftInput.value.trim()) {
                 const errorMessage = document.getElementById('errorMessage');
@@ -220,8 +228,24 @@
             
             giftFields.appendChild(label);
             giftFields.appendChild(input);
+
+            input.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    addGiftInput();
+                }
+            });
             
             input.focus();
+        }
+
+        document.querySelectorAll('.gift-input').forEach(input => {
+            input.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    addGiftInput();
+                }
+            });
         });
         
         document.getElementById('giftForm').addEventListener('submit', function(e) {
