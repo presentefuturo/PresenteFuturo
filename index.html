@@ -49,7 +49,7 @@
         button { 
             width: 100%; 
             padding: 12px 20px; 
-            background-color: #0097a7ff; /* Cor modificada */
+            background-color: #0097a7ff; 
             color: white; 
             border: none; 
             border-radius: 4px; 
@@ -64,15 +64,15 @@
             margin-top: 5px;
         }
         button:hover {
-            background-color: #007f8dff; /* Cor modificada no hover */
+            background-color: #007f8dff; 
         }
         button[type="submit"] {
-            background-color: #0097a7ff; /* Cor modificada */
+            background-color: #0097a7ff; 
             font-weight: bold;
             font-size: 18px;
         }
         button[type="submit"]:hover {
-            background-color: #007f8dff; /* Cor modificada no hover */
+            background-color: #007f8dff; 
         }
         .error-message {
             color: red;
@@ -96,29 +96,44 @@
             font-size: 12px;
             font-style: italic;
             margin-top: 5px;
-            display: none; /* Inicia oculto até ter conteúdo */
-            text-align: center; /* Centraliza o texto da URL */
+            display: none;
+            text-align: center; 
         }
         .instagram-link.show {
             display: block;
-            color: #0097a7ff; /* Cor vermelha padrão */
+            color: #0097a7ff; 
         }
         .instagram-link.show.blue {
-            color: #0097a7ff; /* Cor azul quando marcado */
+            color: #0097a7ff; 
         }
         .instagram-link.show:hover {
             text-decoration: underline;
         }
-        /* Estilos para o checkbox e texto dinâmico */
         #isThisPerson + span {
             font-size: 12px;
             display: block;
             text-align: center;
             margin-top: 5px;
-            color: red; /* Cor vermelha padrão quando não marcado */
+            color: red; 
         }
         #isThisPerson:checked + span {
-            color: #0097a7ff; /* Cor azul quando marcado */
+            color: #0097a7ff; 
+        }
+        .summary-section {
+            display: none;
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .summary-section h2 {
+            color: #333;
+        }
+        .summary-section p {
+            margin: 8px 0;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
         }
     </style>
 </head>
@@ -161,6 +176,19 @@
             
             <button type="submit">Enviar minha lista de PresenteFuturo</button>
         </form>
+
+        <div class="summary-section" id="summarySection">
+            <h2>Resumo das Informações</h2>
+            <p id="summaryName"></p>
+            <p id="summaryPhone"></p>
+            <p id="summaryBirthday"></p>
+            <p id="summaryInstagram"></p>
+            <div id="summaryGifts"></div>
+            <div class="button-group">
+                <button id="confirmButton">Enviar</button>
+                <button id="editButton" class="secondary">Corrigir</button>
+            </div>
+        </div>
     </div>
     <script>
         document.getElementById('addGiftButton').addEventListener('click', function() {
@@ -193,48 +221,53 @@
             giftFields.appendChild(label);
             giftFields.appendChild(input);
             
-            // Foca automaticamente no novo campo criado
             input.focus();
         });
         
-        document.getElementById('giftForm').addEventListener('submit', async function(e) {
+        document.getElementById('giftForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
             const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value.replace(/\D/g, '');
+            const phone = formatPhoneNumber(document.getElementById('phone').value);
             const instagram = document.getElementById('instagram').value;
-            const birthday = formatDate(document.getElementById('birthday').value);
+            const birthday = formatFullDate(document.getElementById('birthday').value);
             const gifts = document.querySelectorAll('.gift-input');
             const giftsArray = Array.from(gifts).map(gift => gift.value);
             
-            const response = await fetch('/api/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ name, phone, instagram, birthday, gifts: giftsArray })
+            document.getElementById('summaryName').innerHTML = `<strong>Nome:</strong> ${name}`;
+            document.getElementById('summaryPhone').innerHTML = `<strong>Telefone:</strong> ${phone}`;
+            document.getElementById('summaryBirthday').innerHTML = `<strong>Data de Aniversário:</strong> ${birthday}`;
+            document.getElementById('summaryInstagram').innerHTML = `<strong>Perfil do Instagram:</strong> <a href="https://www.instagram.com/${instagram}" target="_blank">@${instagram}</a>`;
+            
+            const summaryGifts = document.getElementById('summaryGifts');
+            summaryGifts.innerHTML = '';
+            giftsArray.forEach((gift, index) => {
+                const giftP = document.createElement('p');
+                giftP.innerHTML = `<strong>Sugestão de Presente ${index + 1}:</strong> ${gift}`;
+                summaryGifts.appendChild(giftP);
             });
             
-            if (response.ok) {
-                const responseData = await response.json();
-                const params = new URLSearchParams();
-                params.append('name', name);
-                params.append('phone', phone);
-                params.append('instagram', instagram);
-                params.append('birthday', birthday);
-                giftsArray.forEach(gift => params.append('gifts[]', gift));
-                
-                // Redireciona para a página de resumo com os parâmetros de URL
-                window.location.href = 'resumo.html?' + params.toString();
-            } else {
-                const errorField = await response.json();
-                alert(`Erro no cadastro: ${errorField.message}`);
-            }
+            document.getElementById('giftForm').style.display = 'none';
+            document.getElementById('summarySection').style.display = 'block';
+        });
+        
+        document.getElementById('editButton').addEventListener('click', function() {
+            document.getElementById('summarySection').style.display = 'none';
+            document.getElementById('giftForm').style.display = 'block';
+        });
+
+        document.getElementById('confirmButton').addEventListener('click', function() {
+            const instagram = document.getElementById('instagram').value;
+            const gifts = document.querySelectorAll('.gift-input');
+            const numGifts = Array.from(gifts).length;
+
+            alert(`A Lista de PresenteFuturo foi gerada para o ${instagram} com ${numGifts} sugestões de presentes`);
         });
 
         document.getElementById('instagram').addEventListener('input', function() {
             const username = this.value.replace(/[^a-zA-Z0-9_.]/g, '').trim(); // Remove caracteres especiais
             this.value = username; // Atualiza o campo com o valor limpo
-            
+
             const instagramUrl = document.getElementById('instagramUrl');
             const isThisPersonCheckbox = document.getElementById('isThisPerson');
             const isThisPersonText = document.getElementById('isThisPersonText');
@@ -265,19 +298,25 @@
             }
         });
 
-        function formatDate(dateString) {
-            const options = { day: '2-digit', month: 'long', year: 'numeric' };
-            const date = new Date(dateString);
-            return date.toLocaleDateString('pt-BR', options);
+        document.getElementById('phone').addEventListener('input', function(e) {
+            const x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+
+        function formatPhoneNumber(phoneString) {
+            const cleaned = ('' + phoneString).replace(/\D/g, '');
+            const match = cleaned.match(/^(\d{2})(\d{5})(\d{4})$/);
+            if (match) {
+                return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+            }
+            return phoneString;
         }
 
-        // Função para formatar o telefone no formato (XX) XXXXX-XXXX
-        document.getElementById('phone').addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 11) value = value.slice(0, 11);
-            value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-            e.target.value = value;
-        });
+        function formatFullDate(dateString) {
+            const [year, month, day] = dateString.split('-');
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            return `${day} de ${months[parseInt(month) - 1]} de ${year}`;
+        }
     </script>
 </body>
 </html>
