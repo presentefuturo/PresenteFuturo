@@ -2,14 +2,14 @@
     "name": "presente-futuro",
     "version": "1.0.0",
     "description": "Site do Presente Futuro",
-    "main": "index.js",
+    "main": "server.js",
     "scripts": {
-      "start": "lite-server"
+        "start": "node server.js"
     },
     "author": "Thiago",
     "license": "ISC",
-    "devDependencies": {
-      "lite-server": "^2.6.1"
+    "dependencies": {
+        "body-parser": "^1.20.2",
+        "express": "^4.19.2"
     }
-  }
-  
+}

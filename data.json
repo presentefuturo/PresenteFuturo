@@ -1,0 +1,28 @@
+[
+  {
+    "name": "Thiago Magalhães",
+    "phone": "(67) 98145-1105",
+    "birthday": "03 de Maio de 1988",
+    "instagram": "thiagomaga01",
+    "gifts": [
+      "Violão",
+      "Cordas de violão",
+      "Guitarra",
+      "pandeiro"
+    ]
+  },
+  {
+    "name": "João",
+    "phone": "(11) 11111-1111",
+    "birthday": "28 de Maio de 1988",
+    "instagram": "joao.joao",
+    "gifts": [
+      "Arroz",
+      "Feijão",
+      "Macarrão",
+      "Farinha",
+      "Bacon",
+      "Linguiça calabresa"
+    ]
+  }
+]
